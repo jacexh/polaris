@@ -34,7 +34,7 @@ type (
 		iface   string
 		snapLen int32
 		filter  string
-		gather  chan *http.Request
+		gather  chan<- *http.Request
 		closed  chan struct{}
 	}
 
@@ -87,17 +87,18 @@ func (h *httpStream) run(c chan<- *http.Request) {
 			)
 			if c != nil {
 				c <- req
+				log.Logger.Info("put request into channel")
 			}
 		}
 	}
 }
 
 // NewSniffer 根据ip、port实例化一个Sniffer对象
-func NewSniffer(ip string, port int) (*Sniffer, error) {
+func NewSniffer(ip string, port int, g chan<- *http.Request) (*Sniffer, error) {
 	sn := &Sniffer{
 		snapLen: defaultSnapLen,
 		filter:  "tcp and dst port " + strconv.Itoa(port),
-		gather:  make(chan *http.Request, gatherBuffer),
+		gather:  g,
 		closed:  make(chan struct{}, 1),
 	}
 
@@ -174,15 +175,9 @@ func (sn *Sniffer) Run() error {
 			assembler.FlushOlderThan(time.Now().Add(-connectionTimeout))
 
 		case <-sn.closed:
-			close(sn.gather) // 在监听停止后，应当关闭采集通道
 			return nil
 		}
 
 	}
 	return nil
-}
-
-// Sending 外发提取到的*http.Request对象
-func (sn *Sniffer) Sending() <-chan *http.Request {
-	return sn.gather
 }

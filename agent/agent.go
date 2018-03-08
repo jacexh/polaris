@@ -1,5 +1,6 @@
 package agent
 
 type Agent struct {
-	ID string
+	hostname string
+	ips      []string
 }

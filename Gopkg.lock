@@ -2,10 +2,15 @@
 
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/google/gopacket"
   packages = [
     ".",
-    "examples/util",
     "layers",
     "pcap",
     "tcpassembly",
@@ -13,6 +18,18 @@
   ]
   revision = "11c65f1ca9081dfea43b4f9643f5c155583b73ba"
   version = "v1.1.14"
+
+[[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
+  version = "v1.2.1"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -42,6 +59,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9c45082c8326892c081d92a3d9229987952460ecc9aeeccef00478069e6cc25e"
+  inputs-digest = "1ba6712a155a851ed00c04851e9ef62a7e23f01ba2b4bbc7756af81cd102b867"
   solver-name = "gps-cdcl"
   solver-version = 1
