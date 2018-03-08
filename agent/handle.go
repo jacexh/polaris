@@ -1,13 +1,11 @@
 package agent
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
-
-	"fmt"
-
-	"bytes"
-	"io/ioutil"
 
 	"github.com/gin-gonic/gin/json"
 	"github.com/jacexh/polaris/log"

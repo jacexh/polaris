@@ -2,11 +2,9 @@ package agent
 
 import (
 	"net/http"
-	"time"
-
 	"sync"
-
 	"sync/atomic"
+	"time"
 
 	"github.com/jacexh/polaris/log"
 )
