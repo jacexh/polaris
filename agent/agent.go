@@ -1,6 +1,9 @@
 package agent
 
-type Agent struct {
-	hostname string
-	ips      []string
-}
+type (
+	// Agent agent服务顶级对象
+	Agent struct {
+		hostname string
+		ips      []string
+	}
+)
