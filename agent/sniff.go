@@ -87,7 +87,7 @@ func (h *httpStream) run(c chan<- *http.Request) {
 			)
 			if c != nil {
 				c <- req
-				log.Logger.Info("put request into channel")
+				log.Logger.Debug("put request into channel")
 			}
 		}
 	}

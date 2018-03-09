@@ -2,12 +2,12 @@ package agent
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
-	"github.com/gin-gonic/gin/json"
 	"github.com/jacexh/polaris/log"
 	"go.uber.org/zap"
 )
@@ -49,5 +49,5 @@ func (cp ConsolePrinter) Handle(req *http.Request) {
 		return
 	}
 	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-	fmt.Printf("headers:\n%s\n\nbody:\n%s\n", header, body)
+	fmt.Printf("headers:\n%s\n\nbody:\n%s\n\n", header, body)
 }
