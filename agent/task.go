@@ -6,6 +6,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"fmt"
+
+	"io/ioutil"
+
+	"io"
+
 	"github.com/jacexh/polaris/log"
 )
 
@@ -49,6 +55,9 @@ func (g *Gather) Handle() {
 			for _, h := range g.handle {
 				h(r)
 			}
+			// todo: 是否应该关闭Request.Body?
+			io.Copy(ioutil.Discard, r.Body)
+			r.Body.Close()
 		}(req)
 	}
 }
@@ -82,6 +91,7 @@ func (st *SniffTask) Stop() {
 	if atomic.CompareAndSwapInt32(&st.finished, taskUnfinished, taskFinished) {
 		st.S.Close()
 		st.G.Close()
+		log.Logger.Info(fmt.Sprintf("task finisehd: %s", st.S.description()))
 	}
 }
 
@@ -98,4 +108,5 @@ func (st *SniffTask) timing() {
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
+	log.Logger.Info(fmt.Sprintf("task finisehd: %s", st.S.description()))
 }

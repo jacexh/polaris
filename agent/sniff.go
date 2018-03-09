@@ -79,11 +79,11 @@ func (h *httpStream) run(c chan<- *http.Request) {
 				zap.String("transport", h.transport.String()),
 				zap.Error(err))
 		} else {
-			tcpreader.DiscardBytesToEOF(req.Body)
-			req.Body.Close()
+			//tcpreader.DiscardBytesToEOF(req.Body)
+			//req.Body.Close()
 			log.Logger.Info("Received request from stream",
 				zap.String("net", h.net.String()),
-				zap.String("transport", h.transport.String()),
+				//zap.String("transport", h.transport.String()),
 			)
 			if c != nil {
 				c <- req
@@ -129,6 +129,10 @@ func NewSniffer(ip string, port int, g chan<- *http.Request) (*Sniffer, error) {
 	return nil, errors.New("cannot found interface by IP " + ip)
 }
 
+func (sn *Sniffer) description() string {
+	return fmt.Sprintf("capturing on interface %s with BSF filter: %s", sn.iface, sn.filter)
+}
+
 // Close 停止嗅探
 func (sn *Sniffer) Close() {
 	sn.closed <- struct{}{}
@@ -136,7 +140,7 @@ func (sn *Sniffer) Close() {
 
 // Run 开始嗅探
 func (sn *Sniffer) Run() error {
-	log.Logger.Info(fmt.Sprintf("starting capturing on interface %s with BSF filter: %s", sn.iface, sn.filter))
+	log.Logger.Info(fmt.Sprintf("starting %s", sn.description()))
 
 	handle, err := pcap.OpenLive(sn.iface, sn.snapLen, promiscuous, sniffTimeout)
 	if err != nil {

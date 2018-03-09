@@ -1,14 +1,13 @@
 package agent
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"github.com/jacexh/polaris/log"
+	"github.com/jacexh/polaris/model"
 	"go.uber.org/zap"
 )
 
@@ -38,16 +37,16 @@ func (red *Redirector) Handle(req *http.Request) {
 }
 
 func (cp ConsolePrinter) Handle(req *http.Request) {
-	header, err := json.Marshal(req.Header)
+	var r *model.Request
+	r, err := model.NewFromHTTPRequest(req)
 	if err != nil {
-		log.Logger.Error("error marshal request header", zap.Error(err))
+		log.Logger.Error("convert http.Request to model.Request failed", zap.Error(err))
 		return
 	}
-	body, err := ioutil.ReadAll(req.Body)
+	content, err := json.MarshalIndent(r, "", "    ")
 	if err != nil {
-		log.Logger.Error("read request body failed", zap.Error(err))
+		log.Logger.Error("marshal model.Request failed", zap.Error(err))
 		return
 	}
-	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-	fmt.Printf("headers:\n%s\n\nbody:\n%s\n\n", header, body)
+	fmt.Println(string(content))
 }
