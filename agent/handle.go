@@ -1,34 +1,37 @@
 package agent
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/jacexh/polaris/log"
 	"github.com/jacexh/polaris/model"
+	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
 
 type (
+	// RequestHandle 声明处理*http.Request对象的方法类型
 	RequestHandle func(r *http.Request)
 
-	// Redirector .
+	// Redirector 实现将*http.Request转发到目标服务器
 	Redirector struct {
 		Src string // eg. test.example.com:81
 		Dst string // eg. https://stage.example.com:90/asdx123
 	}
 
+	// ConsolePrinter 将*http.Request打印到控制台
 	ConsolePrinter struct{}
 )
 
+// Handle *Redirector实现的RequestHandle
 func (red *Redirector) Handle(req *http.Request) {
 	if red.Src != "" && req.URL.Host != red.Src {
 		return
 	}
-	newUrl := red.Dst + req.URL.RequestURI()
-	URL, err := url.Parse(newUrl)
+	newURL := red.Dst + req.URL.RequestURI()
+	URL, err := url.Parse(newURL)
 	if err != nil {
 		log.Logger.Error("error redirect request to "+red.Dst, zap.Error(err))
 		return
@@ -36,6 +39,7 @@ func (red *Redirector) Handle(req *http.Request) {
 	req.URL = URL
 }
 
+// Handle ConsolePrinter实现的RequestHandle
 func (cp ConsolePrinter) Handle(req *http.Request) {
 	var r *model.Request
 	r, err := model.NewFromHTTPRequest(req)
@@ -43,7 +47,7 @@ func (cp ConsolePrinter) Handle(req *http.Request) {
 		log.Logger.Error("convert http.Request to model.Request failed", zap.Error(err))
 		return
 	}
-	content, err := json.MarshalIndent(r, "", "    ")
+	content, err := jsoniter.MarshalIndent(r, "", "    ")
 	if err != nil {
 		log.Logger.Error("marshal model.Request failed", zap.Error(err))
 		return

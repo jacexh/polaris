@@ -29,8 +29,8 @@ const (
 )
 
 type (
-	// Sniffer 端口级嗅探对象
-	Sniffer struct {
+	// sniffer 端口级嗅探对象
+	sniffer struct {
 		iface   string
 		snapLen int32
 		filter  string
@@ -93,9 +93,9 @@ func (h *httpStream) run(c chan<- *http.Request) {
 	}
 }
 
-// NewSniffer 根据ip、port实例化一个Sniffer对象
-func NewSniffer(ip string, port int, g chan<- *http.Request) (*Sniffer, error) {
-	sn := &Sniffer{
+// newSniffer 根据ip、port实例化一个Sniffer对象
+func newSniffer(ip string, port int, g chan<- *http.Request) (*sniffer, error) {
+	sn := &sniffer{
 		snapLen: defaultSnapLen,
 		filter:  "tcp and dst port " + strconv.Itoa(port),
 		gather:  g,
@@ -129,17 +129,16 @@ func NewSniffer(ip string, port int, g chan<- *http.Request) (*Sniffer, error) {
 	return nil, errors.New("cannot found interface by IP " + ip)
 }
 
-func (sn *Sniffer) description() string {
+func (sn *sniffer) description() string {
 	return fmt.Sprintf("capturing on interface %s with BSF filter: %s", sn.iface, sn.filter)
 }
 
-// Close 停止嗅探
-func (sn *Sniffer) Close() {
+func (sn *sniffer) close() {
 	sn.closed <- struct{}{}
 }
 
-// Run 开始嗅探
-func (sn *Sniffer) Run() error {
+// run 开始嗅探
+func (sn *sniffer) run() error {
 	log.Logger.Info(fmt.Sprintf("starting %s", sn.description()))
 
 	handle, err := pcap.OpenLive(sn.iface, sn.snapLen, promiscuous, sniffTimeout)
@@ -181,7 +180,5 @@ func (sn *Sniffer) Run() error {
 		case <-sn.closed:
 			return nil
 		}
-
 	}
-	return nil
 }
