@@ -17,8 +17,9 @@ type (
 
 	// Redirector 实现将*http.Request转发到目标服务器
 	Redirector struct {
-		Src string // eg. test.example.com:81
-		Dst string // eg. https://stage.example.com:90/asdx123
+		Src  string // eg. test.example.com:81
+		Dst  string // eg. https://stage.example.com:90/asdx123
+		Host string // 非空字符串时，会修改Header的Host字段
 	}
 
 	// ConsolePrinter 将*http.Request打印到控制台
@@ -37,6 +38,9 @@ func (red *Redirector) Handle(req *http.Request) {
 		return
 	}
 	req.URL = URL
+	if red.Host != "" {
+		req.Header.Set("Host", red.Host)
+	}
 }
 
 // Handle ConsolePrinter实现的RequestHandle
