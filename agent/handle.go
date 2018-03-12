@@ -7,7 +7,7 @@ import (
 
 	"github.com/jacexh/polaris/log"
 	"github.com/jacexh/polaris/model"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
 

@@ -2,9 +2,8 @@ package agent
 
 import (
 	"fmt"
-	"time"
-
 	"sync"
+	"time"
 
 	"github.com/jacexh/polaris/log"
 	"github.com/satori/go.uuid"

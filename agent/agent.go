@@ -19,6 +19,12 @@ type (
 		tasks *taskManager
 	}
 
+	// HostInfo 用于存放Agent所在服务器的基本系统信息，如hostname、ip等
+	HostInfo struct {
+		Alias string
+		IPs   []string
+	}
+
 	taskManager struct {
 		interval time.Duration
 		tasks    sync.Map
