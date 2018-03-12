@@ -8,5 +8,4 @@ func main() {
 		panic(err)
 	}
 	task.Sniff()
-
 }
