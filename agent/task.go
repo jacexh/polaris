@@ -21,6 +21,7 @@ type (
 		mu     sync.RWMutex
 	}
 
+	// TaskStatus SniffTask任务状态
 	TaskStatus int32
 )
 
