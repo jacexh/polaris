@@ -19,6 +19,7 @@ func init() {
 	cfg.Sampling = nil
 	cfg.EncoderConfig.TimeKey = "time"
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	cfg.Encoding = "json"
 
 	output := os.Getenv(Output)
 	if output != "" {
