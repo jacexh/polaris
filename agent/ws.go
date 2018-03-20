@@ -25,6 +25,7 @@ var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
+// Connect 连接指定的web socket接口
 func (wc *WSClient) Connect(addr string) error {
 	u, err := url.Parse(addr)
 	if err != nil {
@@ -40,6 +41,7 @@ func (wc *WSClient) Connect(addr string) error {
 	return nil
 }
 
+// NewWSClient 实例化WSClient
 func NewWSClient(addr string) (*WSClient, error) {
 	u, err := url.Parse(addr)
 	if err != nil {
@@ -58,6 +60,7 @@ func NewWSClient(addr string) (*WSClient, error) {
 	return &WSClient{conn: conn, url: u}, nil
 }
 
+// Register 将node的信息注册的console
 func (wc *WSClient) Register() error {
 	req := &model.RegisterRequest{
 		AgentID: uuid.NewV4().String(),
