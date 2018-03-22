@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/jacexh/polaris/log"
-	"github.com/jacexh/polaris/model"
+	"github.com/jacexh/polaris/protocols"
 	"github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
@@ -36,7 +36,8 @@ func newWSServer(w http.ResponseWriter, r *http.Request) (*wsServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	req := new(model.WSConnect)
+	// todo: 解析agent id
+	req := new(protocols.WSMessage)
 	err = json.NewDecoder(r.Body).Decode(req)
 	if err != nil {
 		return nil, err
@@ -71,7 +72,7 @@ func (ws *wsServer) readPump() {
 
 		case websocket.TextMessage:
 			// todo: 处理业务消息
-			ret := new(model.WSConnect)
+			ret := new(protocols.WSMessage)
 			err = json.Unmarshal(msg, ret)
 			if err != nil {
 				log.Logger.Warn("unmarshal message failed", zap.String("node", ws.id), zap.Error(err))
@@ -81,13 +82,16 @@ func (ws *wsServer) readPump() {
 }
 
 func (ws *wsServer) writePump() {
-write:
+	defer func() {
+		close(ws.out)
+		ws.conn.Close()
+	}()
 	for {
 		select {
 		case msg, ok := <-ws.out:
 			if !ok { // 写通道被关闭
 				ws.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-				break write
+				return
 			}
 			ws.conn.WriteMessage(msg.t, msg.data)
 		}
@@ -95,15 +99,15 @@ write:
 }
 
 func commonServerError(err error) []byte {
-	data, _ := json.Marshal(&model.BaseResponse{Code: model.CodeServFail, Message: err.Error()}) // 如果你也错，我还能做什么
+	data, _ := json.Marshal(&protocols.BaseRes{Code: protocols.CodeServFail, Message: err.Error()}) // 如果这也错，我还能做什么
 	return data
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
-	req := new(model.RegisterRequest)
+	req := new(protocols.RegisterRequest)
 	err := json.NewDecoder(r.Body).Decode(req)
 	if err != nil {
-		json.NewEncoder(w).Encode(&model.RegisterResponse{&model.BaseResponse{Code: model.CodeClientFail, Message: err.Error()}})
+		json.NewEncoder(w).Encode(&protocols.RegisterResponse{&protocols.BaseRes{Code: protocols.CodeClientFail, Message: err.Error()}})
 		log.Logger.Error("unmarshal request body failed", zap.Error(err))
 		return
 	}
@@ -111,7 +115,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	// todo: save node info
 
-	res := &model.RegisterResponse{BaseResponse: &model.BaseResponse{Code: model.CodeSucc}}
+	res := &protocols.RegisterResponse{BaseRes: &protocols.BaseRes{Code: protocols.CodeSucc}}
 	data, err := json.Marshal(res)
 	if err != nil {
 		data = commonServerError(err)
