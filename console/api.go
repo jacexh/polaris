@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/jacexh/polaris/console/model"
 	"github.com/jacexh/polaris/log"
 	"github.com/jacexh/polaris/protocols"
 	"github.com/json-iterator/go"
@@ -36,6 +37,10 @@ func newWSServer(w http.ResponseWriter, r *http.Request) (*wsServer, error) {
 	if err != nil {
 		return nil, err
 	}
+	conn.SetPingHandler(nil)
+	conn.SetCloseHandler(nil)
+	conn.SetPongHandler(nil)
+
 	// todo: 解析agent id
 	req := new(protocols.WSMessage)
 	err = json.NewDecoder(r.Body).Decode(req)
@@ -64,12 +69,6 @@ func (ws *wsServer) readPump() {
 		}
 
 		switch mt {
-		case websocket.PingMessage:
-			ws.out <- &message{t: websocket.PongMessage, data: []byte{}}
-
-		case websocket.CloseMessage:
-			ws.out <- &message{t: websocket.CloseMessage, data: websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")}
-
 		case websocket.TextMessage:
 			// todo: 处理业务消息
 			ret := new(protocols.WSMessage)
@@ -77,6 +76,8 @@ func (ws *wsServer) readPump() {
 			if err != nil {
 				log.Logger.Warn("unmarshal message failed", zap.String("node", ws.id), zap.Error(err))
 			}
+		default:
+			log.Logger.Warn("unsupported websocket message type", zap.Int("type", mt), zap.ByteString("data", msg))
 		}
 	}
 }
@@ -132,4 +133,8 @@ func ws(w http.ResponseWriter, r *http.Request) {
 	}
 	go serv.readPump()
 	serv.writePump()
+}
+
+func newAgent() *model.Agent {
+	return nil
 }
