@@ -1,10 +1,18 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
 )
+
+func addExtraSpaceIfExist(str string) string {
+	if str != "" {
+		return " " + str
+	}
+	return ""
+}
 
 func updateUnixTimestampOnCreate(scope *gorm.Scope) {
 	if !scope.HasError() {
@@ -30,7 +38,42 @@ func updateUnixTimestampOnUpdate(scope *gorm.Scope) {
 	}
 }
 
+// softDelete 如果struct包含了Deleted字段，将不会物理删除，而是将Deleted字段置为空
+func softDelete(scope *gorm.Scope) {
+	if scope.HasError() {
+		return
+	}
+
+	var extraOpt string
+	if str, ok := scope.Get("gorm:delete_option"); ok {
+		extraOpt = fmt.Sprint(str)
+	}
+
+	deleted, isSoftDelete := scope.FieldByName("Deleted")
+
+	if !scope.Search.Unscoped && isSoftDelete {
+		sql := fmt.Sprintf(
+			"UPDATE %v SET `mtime`=%v, %v=%v%v%v",
+			scope.QuotedTableName(),
+			time.Now().UnixNano()/1e6,
+			scope.Quote(deleted.DBName),
+			1,
+			addExtraSpaceIfExist(scope.CombinedConditionSql()),
+			addExtraSpaceIfExist(extraOpt))
+		scope.Raw(sql).Exec()
+	} else {
+		scope.Raw(fmt.Sprintf(
+			"DELETE FROM %v%v%v",
+			scope.QuotedTableName(),
+			addExtraSpaceIfExist(scope.CombinedConditionSql()),
+			addExtraSpaceIfExist(extraOpt),
+		)).Exec()
+	}
+}
+
 func init() {
 	gorm.DefaultCallback.Create().Replace("gorm:update_time_stamp", updateUnixTimestampOnCreate)
 	gorm.DefaultCallback.Update().Replace("gorm:update_time_stamp", updateUnixTimestampOnUpdate)
+
+	gorm.DefaultCallback.Delete().Replace("gorm:delete", softDelete)
 }
